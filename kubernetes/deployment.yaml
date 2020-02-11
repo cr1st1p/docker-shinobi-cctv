@@ -1,0 +1,176 @@
+
+---
+apiVersion: v1
+data:
+  conf.json: '{"addStorage": [{"name": "second\"", "path": "__DIR__/videos2"}], "cpuUsageMarker":
+    "%Cpu(s)", "cron": {"key": "change_this_to_something_very_RANDOM__just_anything_other_than_THIS"},
+    "db": {"database": "shinobi_cctv", "host": "mysql.default.svc.cluster.local",
+    "password": "somepassword", "port": 3306, "user": "shinboi_cctv_user"}, "detectorMergePamRegionTriggers":
+    true, "mail": {"auth": {"pass": "you_password_OR_app_specific_password", "user":
+    "your_email@gmail.com"}, "service": "gmail"}, "passwordType": "sha256", "pluginKeys":
+    {}, "port": 8080}
+
+    '
+  super.json: '[{ "mail": "cristi@example.com", "pass": "changeme_md5sum"
+    }]
+
+    '
+kind: ConfigMap
+metadata:
+  labels:
+    app: shinobi-cctv
+    chart: shinobi-cctv-0.1
+    heritage: ddk8s
+    release: shinobi-cctv
+  name: shinobi-cctv
+  namespace: default
+
+---
+
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: shinobi-cctv
+    chart: shinobi-cctv-0.1
+    heritage: ddk8s
+    release: shinobi-cctv
+  name: shinobi-cctv
+  namespace: default
+spec:
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: shinobi-cctv
+    spec:
+      containers:
+      - env: null
+        image: docker.io/cr1st1p/shinobi-cctv:0.1
+        name: shinobi-cctv
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /opt/shinobi/videos
+          name: videos
+        - mountPath: /config
+          name: config
+      securityContext:
+        fsGroup: 101
+      volumes:
+      - name: videos
+        persistentVolumeClaim:
+          claimName: shinobi-cctv
+      - configMap:
+          name: shinobi-cctv
+        name: config
+
+---
+
+
+---
+apiVersion: v1
+data:
+  auth: http_encoded_auth_info
+kind: Secret
+metadata:
+  name: camera.mydomain.com
+  namespace: default
+
+---
+
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/auth-realm: Authentication Required - camera.mydomain.com
+    nginx.ingress.kubernetes.io/auth-secret: camera.mydomain.com
+    nginx.ingress.kubernetes.io/auth-type: basic
+  name: camera.mydomain.com
+  namespace: default
+spec:
+  rules:
+  - host: camera.mydomain.com
+    http:
+      paths:
+      - backend:
+          serviceName: shinobi-cctv
+          servicePort: 8080
+  tls:
+  - hosts:
+    - camera.mydomain.com
+    secretName: cert-mydomain-com
+
+
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  labels:
+    dedicated: shinobi-cctv
+    type: nfs
+  name: shinobi-cctv
+spec:
+  accessModes:
+  - ReadWriteMany
+  capacity:
+    storage: 2Gi
+  nfs:
+    path: /mnt/export/shinobi-cctv
+    server: SOME_IP
+  persistentVolumeReclaimPolicy: Retain
+
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: shinobi-cctv
+    chart: shinobi-cctv-0.1
+    heritage: ddk8s
+    release: shinobi-cctv
+  name: shinobi-cctv
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  selector:
+    matchLabels:
+      dedicated: shinobi-cctv
+
+---
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: shinobi-cctv
+    chart: shinobi-cctv-0.1
+    heritage: ddk8s
+    release: shinobi-cctv
+  name: shinobi-cctv
+  namespace: default
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: shinobi-cctv
+  type: ClusterIP
+
+
+

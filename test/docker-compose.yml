@@ -1,0 +1,28 @@
+version: '2'
+services:
+  db:
+    container_name: db
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: r00t
+      MYSQL_DATABASE: shinobi_dev
+      MYSQL_USER: shinobi_dev_user
+      MYSQL_PASSWORD: pass
+    volumes:
+      - ./mysql:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+
+
+    ports:
+      - "9906:3306"
+
+  shinobi:
+    build: ..
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ./config:/config
+      - ./videos:/opt/shinobi/videos
+      - /dev/shm/shinobiDockerTemp:/dev/shm/streams
+    ports:
+      - "8081:8080"
