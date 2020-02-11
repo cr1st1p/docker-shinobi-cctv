@@ -43,11 +43,17 @@ An example of a Kubernetes install can be found in the directory *kubernetes/*
 
 
 
-You can run this image also in a *docker-compose* style - please check the directory *test/*
+### Docker-compose run
+
+You can run this image also in a *docker-compose* style - please check the directory *test/*  and section 'Quick run' below.
 
 
 
-NOTE: There are few things that are not installed, compared to the other docker image - mostly build tools and some libraries - I didn't feel they were needed. If something will not work for you, maybe comment the ```return 0``` from function ``run_shinobi_install_package_dependencies()``	and try with that new image.
+### If features are not working...
+
+There are few things that are not installed, compared to the other docker image - mostly build tools and some libraries - I didn't feel they were needed. But I also did not test any plugins. 
+
+If something will not work for you, maybe comment the ```return 0``` from function ``run_shinobi_install_package_dependencies()``	and try with that new image.
 
 
 

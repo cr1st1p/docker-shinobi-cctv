@@ -3,8 +3,8 @@
 set -e
 
 TAG=0.1
-REPO_DIR=shinobi
-NAME=server
+REPO_DIR=cr1st1p
+NAME=shinobi-cctv
 #export DOCKER_BUILDKIT=1
 export BUILDKIT_PROGRESS=plain
 
