@@ -14,7 +14,7 @@ on:
   #   types: [published]
 
   push:
-    branches: ['main']
+    branches: ['main', 'master']
 env:
   REGISTRY: ghr.io
   IMAGE_NAME: ${{ github.repository }}
