@@ -18,7 +18,6 @@ RUN set -e \
     ; true
 
 COPY docker-entrypoint.sh /home/Shinobi/
-COPY pm2Shinobi.yml /home/Shinobi/
 COPY /tools/modifyJson.js /home/Shinobi/tools
 RUN set -e \
     ; apt-get update -qq \
