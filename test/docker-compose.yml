@@ -22,7 +22,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
       - ./config:/config
-      - ./videos:/opt/shinobi/videos
+      - ./videos:/home/Shinobi/videos
       - /dev/shm/shinobiDockerTemp:/dev/shm/streams
     ports:
       - "8081:8080"

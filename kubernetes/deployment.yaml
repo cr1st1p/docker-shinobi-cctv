@@ -5,7 +5,7 @@ data:
   conf.json: '{"addStorage": [{"name": "second\"", "path": "__DIR__/videos2"}], "cpuUsageMarker":
     "%Cpu(s)", "cron": {"key": "change_this_to_something_very_RANDOM__just_anything_other_than_THIS"},
     "db": {"database": "shinobi_cctv", "host": "mysql.default.svc.cluster.local",
-    "password": "somepassword", "port": 3306, "user": "shinboi_cctv_user"}, "detectorMergePamRegionTriggers":
+    "password": "somepassword", "port": 3306, "user": "shinobi_cctv_user"}, "detectorMergePamRegionTriggers":
     true, "mail": {"auth": {"pass": "you_password_OR_app_specific_password", "user":
     "your_email@gmail.com"}, "service": "gmail"}, "passwordType": "sha256", "pluginKeys":
     {}, "port": 8080}

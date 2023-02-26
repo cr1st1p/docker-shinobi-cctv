@@ -10,7 +10,7 @@ set -x
 # - 
 
 
-BASEDIR=/opt/shinobi
+BASEDIR=/home/Shinobi
 
 bail() {
     echo "$@"
@@ -105,12 +105,12 @@ cd "$BASEDIR" # let's be sure about this
 check_configuration_files_exists
 setup_custom_auto_load
 update_code_if_asked_for
-ensure_plugin_motion_config_is_present
+#ensure_plugin_motion_config_is_present
 read_mysql_credentials
 wait_for_mysql
 create_db_tables
 fix_user_node_uid_gid
-download_custom_autoload_samples
+#download_custom_autoload_samples
 
 # Execute Command
 echo "Starting Shinobi ..."

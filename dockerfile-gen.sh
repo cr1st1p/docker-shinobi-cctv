@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# This will create an image that does NOT install also mysql
+# This will create an image that does NOT install mysql (compared to original version)
 #
 
 
@@ -17,7 +17,7 @@ done
 DEV_MODE=
 FORCE_GIT_CLONE=
 
-SHINOBI_BASEDIR=/opt/shinobi
+SHINOBI_BASEDIR=/home/Shinobi
 
 # ==== command line parsing
 checkArg () {
@@ -62,7 +62,7 @@ do
 done
 
 # ========
-start_stuff() {
+start_dockerfile() {
     exit_run_cmd
 
 
@@ -81,6 +81,8 @@ EXPOSE 8080
 
 
 VOLUME ${SHINOBI_BASEDIR}/videos
+VOLUME ${SHINOBI_BASEDIR}/libs/customAutoload
+VOLUME /config
 
 EOS
 
@@ -88,11 +90,11 @@ EOS
 
 
 
-end_stuff() {
+end_dockerfile() {
     exit_run_cmd
 
     cat <<'EOS'
-CMD ["pm2-docker", "pm2Shinobi.yml"]
+CMD ["pm2-docker", "Docker/pm2.yml"]
 EOS
     echo "WORKDIR ${SHINOBI_BASEDIR}"
     echo "ENTRYPOINT [\"${SHINOBI_BASEDIR}/docker-entrypoint.sh\"]"
@@ -115,29 +117,55 @@ EOS
 SHINOBI_REQ_PACKAGES_RUNTIME=(jq mysql-client)
 
 # 'gyp' node modules requires: 'apt.py' (python package), make
-SHINOBI_REQ_PACKAGES_BUILDTIME=(python make)
+SHINOBI_REQ_PACKAGES_BUILDTIME=(python3 make git)
+
+run_install_ffmpeg() {
+    
+    if true; then
+        cmd_apt_install ffmpeg
+    else
+        # not sure why they need it
+        cmd_apt_min_install \
+            libfreetype6-dev \
+            libgnutls28-dev \
+            libmp3lame-dev \
+            libass-dev \
+            libogg-dev \
+            libtheora-dev \
+            libvorbis-dev \
+            libvpx-dev \
+            libwebp-dev \
+            libssh2-1-dev \
+            libopus-dev \
+            librtmp-dev \
+            libx264-dev \
+            libx265-dev \
+            yasm
+
+        enter_run_cmd        
+        cat << EOS
+; npm install ffbinaries  \\
+EOS
+
+
+
+    fi
+}
+
+run_install_runtime_dependencies() {
+    cmd_apt_min_install "${SHINOBI_REQ_PACKAGES_RUNTIME[@]}"
+    run_install_ffmpeg
+}
+
+run_install_build_time_dependencies() {
+    cmd_apt_min_install "${SHINOBI_REQ_PACKAGES_BUILDTIME[@]}"
+}
+
 
 run_shinobi_install_package_dependencies() {    
-    cmd_apt_min_install "${SHINOBI_REQ_PACKAGES_RUNTIME[@]}"
-    cmd_apt_min_install "${SHINOBI_REQ_PACKAGES_BUILDTIME[@]}"
+    run_install_runtime_dependencies
+    run_install_build_time_dependencies
     return 0
-
-    cmd_apt_min_install \
-        libfreetype6-dev \
-        libgnutls28-dev \
-        libmp3lame-dev \
-        libass-dev \
-        libogg-dev \
-        libtheora-dev \
-        libvorbis-dev \
-        libvpx-dev \
-        libwebp-dev \
-        libssh2-1-dev \
-        libopus-dev \
-        librtmp-dev \
-        libx264-dev \
-        libx265-dev \
-        yasm
 
 
     cmd_apt_min_install \
@@ -180,14 +208,14 @@ run_shinobi_install_nodejs_dependencies() {
     ; ld=\$(pwd) \\
     ; cd "$SHINOBI_BASEDIR" \\
     ; npm i npm@latest -g \\
-    ; npm install pm2 -g  \\
-    ; npm install jsonfile \\
-    ; npm install edit-json-file \\
-    ; npm install ffbinaries  \\
     ; npm install --unsafe-perm \\
-    ; npm audit fix --force \\
+    ; npm install pm2 -g  \\
     ; cd "\$ld" \\
 EOS
+
+#     ; npm audit fix --force \\
+
+# why was this?     ; npm install edit-json-file \\     ; npm install jsonfile \\
 
 }
 
@@ -204,7 +232,6 @@ copy_files() {
     exit_run_cmd
     cat << EOS
 COPY docker-entrypoint.sh ${SHINOBI_BASEDIR}/
-COPY pm2Shinobi.yml ${SHINOBI_BASEDIR}/
 COPY /tools/modifyJson.js ${SHINOBI_BASEDIR}/tools
 EOS
 }
@@ -212,7 +239,10 @@ EOS
 
 run_fix_files() {
     enter_run_cmd
-    echo "    ; chmod -f +x ${SHINOBI_BASEDIR}/*.sh \\"
+    cat << EOS
+    ; chmod -f +x ${SHINOBI_BASEDIR}/*.sh \\
+    ; chmod 777 ${SHINOBI_BASEDIR}/plugins \\
+EOS
 }
 
 
@@ -233,7 +263,8 @@ EOS
 
 
 # =======
-start_stuff
+start_dockerfile
+export NODE_MAJOR_VERSION=16
 
 run_shinobi_makedirs
 [ -z "$DEV_MODE" ] && copy_files
@@ -250,6 +281,7 @@ run_nodejs_install
 
 run_shinobi_install_package_dependencies
 run_shinobi_code_clone
+
 run_shinobi_install_nodejs_dependencies
 run_shinobi_configs_symlinks
 
@@ -261,4 +293,4 @@ run_fix_files
 [ -z "$DEV_MODE" ] && run_cleanup
 
 
-end_stuff
+end_dockerfile

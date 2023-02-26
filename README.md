@@ -4,10 +4,8 @@
 
 This is an image with https://shinobi.video/ - an Open Source CCTV Solution
 
-There is already an official image from the company behind Shinobi, at https://hub.docker.com/r/shinobicctv/shinobi . After reading what are the differences, think which one might fit your needs.
-
-The differences come from the fact that this should generate an image that can be integrated into a Kubernetes cluster, and that it will contain only the CCTV related processes - no mysql setup for example.
-
+There is already an official image from the company behind Shinobi, at https://hub.docker.com/r/shinobicctv/shinobi . 
+Read below about the differences in order to see which one might fit your needs.
 
 
 Code will be retrieved, during build, from branch 'dev'
@@ -16,9 +14,13 @@ Code will be retrieved, during build, from branch 'dev'
 
 ### Differences
 
-Besides being written differently, the differences are:
 
-- uses an external mysql server that you need to provide. It expects the information to be provided directly into the configuration file ```conf.json```
+The differences come from the fact that this should generate an image that can be integrated into a Kubernetes cluster, and that it will contain only the CCTV related processes - no mysql setup for example.
+
+- build is different
+- container's purpose is to be used in a Kubernetes cluster
+- no incorporated Mysql server - leave it as an external dependency
+--It expects the information to be provided directly into the configuration file ```conf.json```
   - it also expects the database and the user to be created already
 - configuration file, *conf.json* and *super.json* would be generated from a *configmap*, inside a Kubernetes install
 - image size is smaller: 520Mb versus 1.3Gb. 
@@ -39,10 +41,6 @@ At runtime,  you will need to have:
 
 An example of a Kubernetes install can be found in the directory *kubernetes/*
 
-(maybe at some point I will write a Helm chart for it - for now I'm using my own framework)
-
-
-
 ### Docker-compose run
 
 You can run this image also in a *docker-compose* style - please check the directory *test/*  and section 'Quick run' below.
@@ -59,9 +57,9 @@ If something will not work for you, maybe comment the ```return 0``` from functi
 
 ### Security
 
-If you care about who can access your video streams or recording, then you should use HTTPS and not plain HTTP. Using this image inside a Kubernetes cluster with cert-manager, for example should be reasonably easy.
+If you care about who can access your video streams or recording, then you should use HTTPS and not plain HTTP. Using this image inside a Kubernetes cluster with cert-manager for example should be reasonably easy.
 
-Additionally, I would also add some form of Http authentication,  in **addition** to what shinobi does (it might not do account checks everywhere). Should be simple to edit an ingress record inside Kubernetes, for example.
+Additionally, I would also add some form of Http authentication,  in **addition** to what shinobi does (it might not do account checks everywhere). It should be simple to edit an ingress record inside Kubernetes.
 
 
 
@@ -107,7 +105,7 @@ docker-compose up
 
 First time, mysql data needs to be created, so you'll need to wait 20-30 seconds. When you see log lines suggesting both mysql and shinobi started ok, you can access the web interface.
 
-Goto http://localhost:8081/super  - enter `admin@shinobi.video` and `admin` Create a user, then log in as that user, at http://localhost:8081/ add a camera and .. enjoy!
+Goto http://localhost:8081/super  - enter `admin@shinobi.video` and `admin` Create a user, then log in as that user, at http://localhost:8081/, add a camera and ... enjoy!
 
 
 
@@ -115,3 +113,7 @@ Goto http://localhost:8081/super  - enter `admin@shinobi.video` and `admin` Crea
 
 The code from this repository - aka the build system, is licensed [Apache 2.0](LICENSE). The Shinobi code has a different open source license: https://gitlab.com/Shinobi-Systems/Shinobi/-/blob/master/LICENSE.md
 
+
+### TODO
+
+don't run as 'root'

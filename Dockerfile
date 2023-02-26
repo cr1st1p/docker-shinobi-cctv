@@ -5,19 +5,21 @@ ENV     LC_ALL=C.UTF-8     LANG=C.UTF-8     APP_UPDATE=manual     APP_BRANCH=dev
 EXPOSE 8080
 
 
-VOLUME /opt/shinobi/videos
+VOLUME /home/Shinobi/videos
+VOLUME /home/Shinobi/libs/customAutoload
+VOLUME /config
 
-SHELL ["/bin/bash", "-c"] 
+SHELL [ "/bin/bash" , "-c" ]
 RUN set -e \
     ; mkdir -p \
         /config \
-        /opt/shinobi \
+        /home/Shinobi \
         /customAutoLoad \
     ; true
 
-COPY docker-entrypoint.sh /opt/shinobi/
-COPY pm2Shinobi.yml /opt/shinobi/
-COPY /tools/modifyJson.js /opt/shinobi/tools
+COPY docker-entrypoint.sh /home/Shinobi/
+COPY pm2Shinobi.yml /home/Shinobi/
+COPY /tools/modifyJson.js /home/Shinobi/tools
 RUN set -e \
     ; apt-get update -qq \
     ; DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -yqq -o Dpkg::Options::=--force-unsafe-io \
@@ -25,38 +27,48 @@ RUN set -e \
     ; [ command -v curl >/dev/null 2>/dev/null ] || DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -yqq -o Dpkg::Options::=--force-unsafe-io \
         curl \
     ; curl -s 'https://deb.nodesource.com/gpgkey/nodesource.gpg.key' | apt-key add - \
-    ; echo 'deb https://deb.nodesource.com/node_11.x bionic main' > /etc/apt/sources.list.d/nodesource.list \
+    ; echo 'deb https://deb.nodesource.com/node_16.x bionic main' > /etc/apt/sources.list.d/nodesource.list \
     ; apt-get update -qq \
     ; DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -yqq -o Dpkg::Options::=--force-unsafe-io \
         nodejs \
     ; DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -yqq -o Dpkg::Options::=--force-unsafe-io \
         jq mysql-client \
+    ; DEBIAN_FRONTEND=noninteractive apt-get install  -yqq -o Dpkg::Options::=--force-unsafe-io \
+        ffmpeg \
     ; DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -yqq -o Dpkg::Options::=--force-unsafe-io \
-        python make \
+        python3 make git \
     ; DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -yqq -o Dpkg::Options::=--force-unsafe-io \
         git \
     ; ld=$(pwd) \
-    ; cd "/opt/shinobi" \
+    ; cd "/home/Shinobi" \
     ; git clone "https://gitlab.com/Shinobi-Systems/Shinobi.git" "existing-dir.tmp" \
     ; mv 'existing-dir.tmp/.git' "." \
     ; rm -rf "existing-dir.tmp/" \
     ; git reset --hard HEAD \
     ; git checkout -b dev \
     ; ld=$(pwd) \
-    ; cd "/opt/shinobi" \
+    ; cd "/home/Shinobi" \
     ; npm i npm@latest -g \
-    ; npm install pm2 -g  \
-    ; npm install jsonfile \
-    ; npm install edit-json-file \
-    ; npm install ffbinaries  \
     ; npm install --unsafe-perm \
-    ; npm audit fix --force \
+    ; npm install pm2 -g  \
     ; cd "$ld" \
-    ; ln -s /config/conf.json "/opt/shinobi/conf.json" \
-    ; ln -s /config/super.json "/opt/shinobi/super.json" \
-    ; chmod -f +x /opt/shinobi/*.sh \
-    ; DEBIAN_FRONTEND=noninteractive apt-get purge -y -o Dpkg::Options::=--force-unsafe-io \
-        command-not-found command-not-found-data man-db manpages python3-commandnotfound python3-update-manager update-manager-core \
+    ; ln -s /config/conf.json "/home/Shinobi/conf.json" \
+    ; ln -s /config/super.json "/home/Shinobi/super.json" \
+    ; chmod -f +x /home/Shinobi/*.sh \
+    ; chmod 777 /home/Shinobi/plugins \
+    ; function apt_purge_packages() { \
+        local pkgToRemoveList="" \
+    ;   for pkgToRemove in "$@"; do \
+          if dpkg --status "$pkgToRemove" &> /dev/null; then \
+            pkgToRemoveList="$pkgToRemoveList $pkgToRemove" ; \
+          fi ; \
+        done  \
+    ;   if [ -n "$pkgToRemoveList" ]; then \
+          DEBIAN_FRONTEND=noninteractive apt-get purge -y -o Dpkg::Options::=--force-unsafe-io \
+            $pkgToRemoveList \
+        ; fi \
+    ; } \
+    ; apt_purge_packages command-not-found command-not-found-data man-db manpages python3-commandnotfound python3-update-manager update-manager-core \
     ; apt-get purge -y --auto-remove \
     ; apt-get clean -q \
     ; rm -f /etc/dpkg/dpkg.cfg.d/02apt-speedup || true \
@@ -66,6 +78,6 @@ RUN set -e \
     ; rm -rf /root/.ffbinaries-cache \
     ; true
 
-CMD ["pm2-docker", "pm2Shinobi.yml"]
-WORKDIR /opt/shinobi
-ENTRYPOINT ["/opt/shinobi/docker-entrypoint.sh"]
+CMD ["pm2-docker", "Docker/pm2.yml"]
+WORKDIR /home/Shinobi
+ENTRYPOINT ["/home/Shinobi/docker-entrypoint.sh"]

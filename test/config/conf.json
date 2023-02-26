@@ -1,7 +1,16 @@
 {
   "port": 8080,
+  "debugLog": false,
+  "enableFaceManager": false,
+  "videosDir": "__DIR__/videos",
+
   "passwordType": "sha256",
   "detectorMergePamRegionTriggers": true,
+  "wallClockTimestampAsDefault": true,
+  "useBetterP2P": true,
+  "smtpServerOptions": {
+    "allowInsecureAuth": true
+  },
   "addStorage": [
     {
       "name": "second",
@@ -23,7 +32,7 @@
     }
   },
   "cron": {
-    "key": "change_this_to_something_very_random__just_anything_other_than_this"
+    "key": "EeNgeep7"
   },
   "pluginKeys": {},
   "cpuUsageMarker": "%Cpu(s)"
