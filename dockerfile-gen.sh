@@ -66,7 +66,7 @@ start_dockerfile() {
     exit_run_cmd
 
 
-    GEN_FROM "ubuntu:bionic-20200112"
+    GEN_FROM "ubuntu:22.04"
 
     cat <<EOS
 

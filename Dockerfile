@@ -1,4 +1,4 @@
-FROM ubuntu:bionic-20200112
+FROM ubuntu:22.04
 
 ENV     LC_ALL=C.UTF-8     LANG=C.UTF-8     APP_UPDATE=manual     APP_BRANCH=dev     APP_PORT=8080
 
@@ -26,7 +26,7 @@ RUN set -e \
     ; [ command -v curl >/dev/null 2>/dev/null ] || DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -yqq -o Dpkg::Options::=--force-unsafe-io \
         curl \
     ; curl -s 'https://deb.nodesource.com/gpgkey/nodesource.gpg.key' | apt-key add - \
-    ; echo 'deb https://deb.nodesource.com/node_16.x bionic main' > /etc/apt/sources.list.d/nodesource.list \
+    ; echo 'deb https://deb.nodesource.com/node_16.x kinetic main' > /etc/apt/sources.list.d/nodesource.list \
     ; apt-get update -qq \
     ; DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -yqq -o Dpkg::Options::=--force-unsafe-io \
         nodejs \
