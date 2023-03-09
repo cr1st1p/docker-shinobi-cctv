@@ -122,7 +122,21 @@ SHINOBI_REQ_PACKAGES_BUILDTIME=(python3 make git)
 run_install_ffmpeg() {
     
     if true; then
-        cmd_apt_install ffmpeg
+        cmd_apt_min_install software-properties-common
+        enter_run_cmd
+        cat << EOS
+        ; add-apt-repository ppa:savoury1/ffmpeg6 \\
+        ; add-apt-repository ppa:savoury1/ffmpeg4 \\
+        ; apt update \\
+        ; DEBIAN_FRONTEND=noninteractive apt full-upgrade -yqq -o Dpkg::Options::=--force-unsafe-io \\
+EOS
+        cmd_apt_min_install ffmpeg 
+        
+        #enter_run_cmd
+        #echo '; ffmpeg --version \'
+
+
+        #cmd_apt_install ffmpeg
     else
         # not sure why they need it
         cmd_apt_min_install \

@@ -32,7 +32,13 @@ RUN set -e \
         nodejs \
     ; DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -yqq -o Dpkg::Options::=--force-unsafe-io \
         jq mysql-client \
-    ; DEBIAN_FRONTEND=noninteractive apt-get install  -yqq -o Dpkg::Options::=--force-unsafe-io \
+    ; DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -yqq -o Dpkg::Options::=--force-unsafe-io \
+        software-properties-common \
+        ; add-apt-repository ppa:savoury1/ffmpeg6 \
+        ; add-apt-repository ppa:savoury1/ffmpeg4 \
+        ; apt update \
+        ; DEBIAN_FRONTEND=noninteractive apt full-upgrade -yqq -o Dpkg::Options::=--force-unsafe-io \
+    ; DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -yqq -o Dpkg::Options::=--force-unsafe-io \
         ffmpeg \
     ; DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -yqq -o Dpkg::Options::=--force-unsafe-io \
         python3 make git \
